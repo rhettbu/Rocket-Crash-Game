@@ -1,6 +1,7 @@
 # 🎰 Blockchain Casino Game - Crash & Coin Flip 🎲
 
-![Casino Game Banner](https://yourimageurl.com/banner.png)
+![image](https://github.com/user-attachments/assets/bc6b38cc-8d9b-4ff4-bf96-d13a70f1eccb)
+
 
 🚀 **A provably fair blockchain casino** featuring **Crash** and **Coin Flip**, built on **Base, Ethereum, and Solana**. Play, win, and withdraw instantly with decentralized smart contracts ensuring transparency.
 
@@ -21,7 +22,7 @@ Telegram [rhettjel](https://t.me/rhettjel) Twitter[DeFiMaxi](https://x.com/defai
 
 ---
 
-## 🏗️ How It Works
+##  How It Works
 1. **Deposit Crypto** - Fund your wallet with **ETH, SOL, or BASE tokens**.
 2. **Choose a Game** - Play **Crash** or **Coin Flip**.
 3. **Place Your Bet** - Select your wager and confirm.
@@ -39,14 +40,14 @@ Telegram [rhettjel](https://t.me/rhettjel) Twitter[DeFiMaxi](https://x.com/defai
 
 ---
 
-## 📜 Smart Contract & Security
-- ✅ **Verified Smart Contracts** (Solidity for Base/Ethereum, Rust for Solana)
-- 🔐 **Random Number Generation (RNG)** - Chainlink VRF for fairness
-- 🛑 **Anti-Exploit Measures** - Preventing front-running & bot abuse
+##  Smart Contract & Security
+-  **Verified Smart Contracts** (Solidity for Base/Ethereum, Rust for Solana)
+-  **Random Number Generation (RNG)** - Chainlink VRF for fairness
+-  **Anti-Exploit Measures** - Preventing front-running & bot abuse
 
 ---
 
-## 📦 Tech Stack
+##  Tech Stack
 - **Frontend:** React, TypeScript, Next.js
 - **Backend:** Node.js, Express, WebSockets
 - **Blockchain:** Solidity (EVM), Anchor (Solana)
@@ -55,7 +56,7 @@ Telegram [rhettjel](https://t.me/rhettjel) Twitter[DeFiMaxi](https://x.com/defai
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js `>=18`
@@ -64,8 +65,4 @@ Telegram [rhettjel](https://t.me/rhettjel) Twitter[DeFiMaxi](https://x.com/defai
 - Alchemy/QuickNode API for Base & Ethereum
 - Solana RPC (Helius, QuickNode)
 
-### Clone & Install
-```sh
-git clone https://github.com/yourrepo/blockchain-casino.git
-cd blockchain-casino
-yarn install
+
