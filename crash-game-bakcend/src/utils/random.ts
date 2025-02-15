@@ -58,7 +58,7 @@ const generateCrashPoint = (seed: string, salt: string): number => {
   const hs = Math.floor(100 / (0.05 * 100));
 
   if (isCrashHashDivisible(hash, hs)) {
-    return 100;
+    return 109;
   }
 
   const h = parseInt(hash.slice(0, 52 / 4), 16);
