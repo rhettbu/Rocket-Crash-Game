@@ -20,14 +20,7 @@ const inverseGrowth = (result: number) =>
   16666.666667 * Math.log(0.01 * result);
 
 const formatPlayerBet = (bet: IBetType): IPendingBetType => {
-  const formatted: IPendingBetType = {
-    username: bet.username,
-    avatar: bet.avatar,
-    betAmount: bet.betAmount,
-    status: bet.status,
-    // autobet: bet.autobet,
-    crypto: bet.crypto,
-    playerID: bet.playerID,
+  
   };
 
   if (bet.status !== BET_STATES.Playing) {
@@ -48,30 +41,11 @@ const BET_STATES = {
 };
 
 const GAME_STATES = {
-  NotStarted: 1,
-  Starting: 2,
-  InProgress: 3,
-  Over: 4,
-  Blocking: 5,
-  Refunded: 6,
+
 };
 
 const GAME_STATE: IGameStateType = {
-  _id: null,
-  status: GAME_STATES.Starting,
-  crashPoint: 0,
-  startedAt: new Date(),
-  duration: 0,
-  players: {},
-  bots: {},
-  pending: {},
-  pendingCount: 0,
-  botCount: 0,
-  pendingBets: [],
-  privateSeed: "",
-  privateHash: "",
-  publicSeed: "",
-  connectedUsers: {},
+ 
 };
 
 const growthFunc = (ms: number) =>
@@ -83,44 +57,11 @@ const calculateGamePayout = (ms: number) => {
 };
 
 export const setupCrashServer = (io: Server) => {
-  const crashNamespace = io.of("/crash");
-
-  let user: IUser | null = null;
-  let logged: boolean = false;
-
-  const _emitPendingBets = () => {
-    const bets = GAME_STATE.pendingBets;
-    GAME_STATE.pendingBets = [];
-
-    io.of("/crash").emit("game-bets", bets);
-  };
-
-  const emitPlayerBets = _.throttle(_emitPendingBets, 600);
+  
 
   const createNewGame = () => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Generate pre-roll provably fair data
-        const provablyData = await generatePrivateSeedHashPair();
-
-        // Push game to db
-        const newGame = new Crash({
-          privateSeed: provablyData.seed,
-          privateHash: provablyData.hash,
-          players: {},
-          status: GAME_STATES.Starting,
-        });
-
-        // Save the new document
-        await newGame.save();
-
-        console.log("Crash >> Generated new game with the id", newGame._id);
-
-        resolve(newGame);
-      } catch (error) {
-        console.log(`Crash >> Couldn't create a new game ${error}`);
-      }
-    });
+    return
+    // create game
   };
 
   const runGame = async () => {
@@ -280,232 +221,7 @@ export const setupCrashServer = (io: Server) => {
 
     emitStarting();
   };
-
-  const emitStarting = () => {
-    // Emiting starting to clients
-    crashNamespace.emit("game-starting", {
-      _id: GAME_STATE._id,
-      privateHash: GAME_STATE.privateHash,
-      timeUntilStart: RESTART_WAIT_TIME,
-    });
-
-    setTimeout(blockGame, RESTART_WAIT_TIME - 500);
-  };
-
-  const blockGame = () => {
-    GAME_STATE.status = GAME_STATES.Blocking;
-
-    const loop = () => {
-      const ids = Object.keys(GAME_STATE.pending);
-      if (GAME_STATE.pendingCount > 0) {
-        // console.log(
-        //   `Crash >> Delaying game while waiting for ${ids.length} (${ids.join(
-        //     ", "
-        //   )}) join(s)`
-        // );
-        return setTimeout(loop, 50);
-      }
-
-      startGame();
-    };
-
-    loop();
-  };
-
-  const startGame = async () => {
-    try {
-      // Generate random data
-      const randomData = await generateCrashRandom(GAME_STATE.privateSeed!);
-
-      // Overriding game state
-      GAME_STATE.status = GAME_STATES.InProgress;
-      GAME_STATE.crashPoint = randomData.crashPoint;
-      GAME_STATE.publicSeed = randomData.publicSeed;
-      GAME_STATE.duration = Math.ceil(inverseGrowth(GAME_STATE.crashPoint + 1));
-      GAME_STATE.startedAt = new Date();
-      GAME_STATE.pending = {};
-      GAME_STATE.pendingCount = 0;
-
-      console.log(
-        `Crash >> Starting new game,
-        ${GAME_STATE._id} with crash point ${GAME_STATE.crashPoint / 100}`
-      );
-
-      // Updating in db
-      await Crash.updateOne(
-        { _id: GAME_STATE._id },
-        {
-          status: GAME_STATES.InProgress,
-          crashPoint: GAME_STATE.crashPoint,
-          publicSeed: GAME_STATE.publicSeed,
-          startedAt: GAME_STATE.startedAt,
-        }
-      );
-
-      // Emiting start to clients
-      crashNamespace.emit("game-start", {
-        publicSeed: GAME_STATE.publicSeed,
-      });
-
-      callTick(0);
-    } catch (error) {
-      console.log("Error while starting a crash game:", error);
-
-      // Notify clients that we had an error
-      crashNamespace.emit(
-        "notify-error",
-        "Our server couldn't connect to EOS Blockchain, retrying in 15s"
-      );
-
-      // Timeout to retry
-      const timeout = setTimeout(() => {
-        // Retry starting the game
-        startGame();
-
-        return clearTimeout(timeout);
-      }, 15000);
-    }
-  };
-
-  const callTick = (elapsed: number) => {
-    // Calculate next tick
-    const left = GAME_STATE.duration! - elapsed;
-    const nextTick = Math.max(0, Math.min(left, TICK_RATE));
-
-    setTimeout(runTick, nextTick);
-  };
-
-  const runTick = () => {
-    const elapsed = new Date().getTime() - GAME_STATE.startedAt!.getTime();
-    const at = growthFunc(elapsed);
-
-    runCashOuts(at);
-
-    if (at > GAME_STATE.crashPoint!) {
-      endGame();
-    } else {
-      tick(elapsed);
-    }
-  };
-
-  const tick = (elapsed: number) => {
-    crashNamespace.emit("game-tick", {
-      e: elapsed,
-      p: calculateGamePayout(elapsed) / 100,
-    });
-    callTick(elapsed);
-  };
-
-  const runCashOuts = (elapsed: number) => {
-    _.each(GAME_STATE.players, (bet) => {
-      if (bet.status !== BET_STATES.Playing) return;
-
-      if (
-        bet.autoCashOut >= 101 &&
-        bet.autoCashOut <= elapsed &&
-        bet.autoCashOut <= GAME_STATE.crashPoint!
-      ) {
-        doCashOut(bet.playerID, bet.autoCashOut, false, (err: Error | null) => {
-          if (err) {
-            console.log(`There was an error while trying to cashout ${err}`);
-          }
-        });
-      } else if (
-        bet.betAmount * (elapsed / 100) >= 50000 &&
-        elapsed <= GAME_STATE.crashPoint!
-      ) {
-        doCashOut(bet.playerID, elapsed, true, (err: Error | null) => {
-          if (err) {
-            console.log(
-              `Crash >> There was an error while trying to cashout`,
-              err
-            );
-          }
-        });
-      }
-    });
-  };
-
-  const doCashOut = async (
-    playerID: string,
-    elapsed: number,
-    forced: boolean,
-    cb: (err: Error | null, result?: any) => void
-  ) => {
-    if (GAME_STATE.players[playerID].status !== BET_STATES.Playing) return;
-
-    // Update player state
-    GAME_STATE.players[playerID].status = BET_STATES.CashedOut;
-    GAME_STATE.players[playerID].stoppedAt = elapsed;
-    if (forced) GAME_STATE.players[playerID].forcedCashout = true;
-
-    const bet = GAME_STATE.players[playerID];
-
-    // Calculate winning amount
-    let winningAmount = 0;
-    let cashout = 0;
-
-    if (bet.autoCashOut !== undefined && bet.stoppedAt !== undefined) {
-      cashout =
-        bet.autoCashOut === bet.stoppedAt ? bet.autoCashOut : bet.stoppedAt;
-      winningAmount = parseFloat((bet.betAmount * (cashout / 100)).toFixed(2));
-    } else {
-      console.error("Error: autoCashOut or stoppedAt is undefined.");
-    }
-    const houseAmount = winningAmount * 0.05;
-    // winningAmount *= 1 - 0.05;
-
-    GAME_STATE.players[playerID].winningAmount = winningAmount;
-
-    if (cb) cb(null, GAME_STATE.players[playerID]);
-
-    const { status, stoppedAt } = GAME_STATE.players[playerID];
-
-    // Emiting cashout to clients
-    crashNamespace.emit("bet-cashout", {
-      playerID,
-      status,
-      stoppedAt,
-      winningAmount,
-    });
-
-    // Giving winning balance to user
-    const updateuser = await User.updateOne(
-      { _id: playerID },
-      {
-        $inc: {
-          wallet: Math.abs(winningAmount),
-          crash: Math.abs(winningAmount),
-        },
-      }
-    );
-
-    if (updateuser.matchedCount > 0) {
-      const newWalletTxData = {
-        userId: playerID,
-        payout: Math.abs(winningAmount),
-        multi: cashout.toFixed(2),
-        bet: bet.betAmount,
-        reason: "Crash Win",
-        game: "crash",
-        extraData: { crashGameId: GAME_STATE._id },
-      };
-
-      await SiteTransaction.create(newWalletTxData);
-    }
-
-    // Update local wallet
-    if (playerID === user?.id) {
-      crashNamespace.emit("update_wallet", {
-        amount: winningAmount,
-      });
-    }
-
-    // Updating in db
-    const updateParam: { $set: { [key: string]: any } } = { $set: {} };
-    updateParam.$set["players." + playerID] = GAME_STATE.players[playerID];
-    await Crash.updateOne({ _id: GAME_STATE._id }, updateParam);
-  };
+// crash game logic here
 
   const endGame = async () => {
     console.log(`Crash >> Ending game at`, GAME_STATE.crashPoint! / 100);

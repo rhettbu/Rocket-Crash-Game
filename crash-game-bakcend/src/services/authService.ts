@@ -9,13 +9,13 @@ export const signUpService = async (email: string, password: string) => {
 };
 
 export const signInService = async (email: string, password: string) => {
-  // const user = await User.findOne({ email });
-  // if (!user || !(await bcrypt.compare(password, user.password))) {
-  //   throw new Error("Invalid credentials");
-  // }
-  // const token = jwt.sign(
-  //   { userId: user._id },
-  //   process.env.JWT_SECRET || "secret"
-  // );
-  // return token;
+  const user = await User.findOne({ email });
+  if (!user || !(await bcrypt.compare(password, user.password))) {
+    throw new Error("Invalid credentials");
+  }
+  const token = jwt.sign(
+    { userId: user._id },
+    process.env.JWT_SECRET || "secret"
+  );
+  return token;
 };

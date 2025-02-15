@@ -389,4 +389,4 @@ export const TOKEN_ABI = [
   { anonymous: false, inputs: [], name: "Unpause", type: "event" },
 ];
 
-export const TOKEN_ADDRESS = "0x762E96b9501662deC622f73600E0D377cF02f7EB";
+export const TOKEN_ADDRESS = "";
