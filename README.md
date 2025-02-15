@@ -7,7 +7,7 @@
 
 
 # Contact
-Telegram [rhettjel](https://t.me/rhettjel) Twitter[DeFiMaxi](https://x.com/defai_maxi)
+Telegram [rhettjel](https://t.me/rhettjel) Twitter [DeFiMaxi](https://x.com/defai_maxi)
 ---
 
 ## Features
